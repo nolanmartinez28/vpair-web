@@ -7,65 +7,102 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 
-<body style="font-family: Arial; padding: 20px;">
+<body style="margin:0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f5f5f5;">
 
-  <h1>V-Pair</h1>
-  <h2 id="status">Loading...</h2>
+  <div style="max-width:600px; margin:auto; padding:20px;">
 
-  <p id="customer"></p>
-  <p id="vehicle"></p>
-  <p id="issue"></p>
+    <!-- Header -->
+    <div style="text-align:center; margin-bottom:20px;">
+      <h1 style="margin:0;">V-Pair</h1>
+      <p style="color:gray; margin:5px 0;">Live Repair Status</p>
+    </div>
 
-  <div id="photos"></div>
+    <!-- Status Card -->
+    <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.05); margin-bottom:20px;">
+      <h2 id="status" style="margin:0;">Loading...</h2>
+    </div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAcbdhvQZpERkHunxm7ODmR5l2Xc-lJ4HY",
-      authDomain: "v-pair.firebaseapp.com",
-      projectId: "v-pair",
-      storageBucket: "v-pair.firebasestorage.app",
-      messagingSenderId: "812529727370",
-      appId: "1:812529727370:web:08cbd7ed0b89db1532ba73",
-    };
+    <!-- Details Card -->
+    <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.05); margin-bottom:20px;">
+      <p id="customer"></p>
+      <p id="vehicle"></p>
+      <p id="issue"></p>
+    </div>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    <!-- Photos -->
+    <div id="photos"></div>
 
-    const pathParts = window.location.pathname.split("/");
-    const workOrderId = pathParts[pathParts.length - 1];
+  </div>
+  
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAcbdhvQZpERkHunxm7ODmR5l2Xc-lJ4HY",
+    authDomain: "v-pair.firebaseapp.com",
+    projectId: "v-pair",
+    storageBucket: "v-pair.firebasestorage.app",
+    messagingSenderId: "812529727370",
+    appId: "1:812529727370:web:08cbd7ed0b89db1532ba73",
+    measurementId: "G-T1N6Z00L9T"
+  };
 
-    function loadWorkOrder() {
-      db.collection("workOrders")
-        .doc(workOrderId)
-        .onSnapshot((doc) => {
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-          if (!doc.exists) {
-            document.getElementById("status").innerText = "Work order not found";
-            return;
-          }
+  const pathParts = window.location.pathname.split("/");
+  const workOrderId = pathParts[pathParts.length - 1];
 
-          const data = doc.data();
+  function loadWorkOrder() {
+    db.collection("workOrders")
+      .doc(workOrderId)
+      .onSnapshot((doc) => {
 
-          document.getElementById("status").innerText = data.status;
-          document.getElementById("customer").innerText = "Customer: " + data.customerName;
-          document.getElementById("vehicle").innerText = "Vehicle: " + data.vehicleInfo;
-          document.getElementById("issue").innerText = "Issue: " + data.issueDescription;
+        if (!doc.exists) {
+          document.getElementById("status").innerText = "Work order not found";
+          return;
+        }
 
-          const photoContainer = document.getElementById("photos");
-          photoContainer.innerHTML = "";
+        const data = doc.data();
 
-          data.mediaURLs.forEach(url => {
-            const img = document.createElement("img");
-            img.src = url;
-            img.style.width = "100%";
-            img.style.marginTop = "10px";
-            photoContainer.appendChild(img);
-          });
+        // Status
+        const statusEl = document.getElementById("status");
+        statusEl.innerText = data.status;
+
+        if (data.status === "Completed") {
+          statusEl.style.color = "green";
+        } else if (data.status === "In Progress") {
+          statusEl.style.color = "orange";
+        } else {
+          statusEl.style.color = "gray";
+        }
+
+        // Details
+        document.getElementById("customer").innerText =
+          "Customer: " + data.customerName;
+
+        document.getElementById("vehicle").innerText =
+          "Vehicle: " + data.vehicleInfo;
+
+        document.getElementById("issue").innerText =
+          "Issue: " + data.issueDescription;
+
+        // Photos
+        const photoContainer = document.getElementById("photos");
+        photoContainer.innerHTML = "";
+
+        data.mediaURLs.forEach(url => {
+          const img = document.createElement("img");
+
+          img.src = url;
+          img.style.width = "100%";
+          img.style.marginTop = "10px";
+          img.style.borderRadius = "10px";
+
+          photoContainer.appendChild(img);
         });
-    }
+      });
+  }
 
-    loadWorkOrder();
-  </script>
-
+  loadWorkOrder();
+</script>
 </body>
 </html>
